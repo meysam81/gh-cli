@@ -78,11 +78,11 @@ jobs:
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-password: ${{ secrets.DOCKERHUB_PASSWORD }}
           image-name: |
-            ${{ github.repository }}
+            ghcr.io/${{ github.repository }}
             meysam81/${{ github.event.repository.name }}
           image-extra-tags: |
-            ${{ github.repository }}:${{ github.run_id }}
-            ${{ github.repository }}:${{ env.GH_VERSION }}
+            ghcr.io/${{ github.repository }}:${{ github.run_id }}
+            ghcr.io/${{ github.repository }}:${{ env.GH_VERSION }}
             meysam81/${{ github.event.repository.name }}:${{ github.run_id }}
             meysam81/${{ github.event.repository.name }}:${{ env.GH_VERSION }}
           kubescape: true
