@@ -12,12 +12,12 @@ jobs:
   get-version:
     runs-on: ubuntu-latest
     outputs:
-      gh_version: ${{ steps.gh_version.outputs.gh_version }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Get next gh version
-        id: gh_version
+        id: version
         run: |
           current_version="$(sed -n 's/ENV GITHUB_CLI_VERSION=//p' Dockerfile)"
           echo "$current_version"
@@ -25,12 +25,12 @@ jobs:
           echo "$latest_versions"
           next_version="$(echo "$latest_versions" | grep -Eo "(.*?) v$current_version( |$)" | awk '{print $(NF-1)}' | cut -c2-)"
           echo "$next_version"
-          echo "gh_version=${next_version}" >> $GITHUB_OUTPUT
+          echo "version=${next_version}" >> $GITHUB_OUTPUT
 
   update-version:
     env:
-      GH_VERSION: ${{ steps.gh_version.outputs.gh_version }}
-    if: needs.get-version.outputs.gh_version != ''
+      GH_VERSION: ${{ needs.get-version.outputs.version }}
+    if: needs.get-version.outputs.version != ''
     needs: get-version
     permissions:
       contents: write
@@ -41,17 +41,23 @@ jobs:
       - name: Update GITHUB_CLI_VERSION
         run: |
           sed -i "s/ENV GITHUB_CLI_VERSION=.*/ENV GITHUB_CLI_VERSION=${GH_VERSION}/" Dockerfile
-      - name: Commit changes
+      - name: Configure git
         run: |
           git config --global user.email ${{ github.actor }}@users.noreply.github.com
           git config --global user.name ${{ github.actor }}
-          git add Dockerfile
-          git commit -m "chore(deps): Update GITHUB_CLI_VERSION to ${GH_VERSION}"
-          git push origin $(git branch --show-current)
+      - name: Commit changes
+        run: |
+          if git diff --quiet Dockerfile; then
+            echo "No changes to commit"
+          else
+            git add Dockerfile
+            git commit -m "chore(deps): Update GITHUB_CLI_VERSION to ${GH_VERSION}"
+            git push origin $(git branch --show-current)
+          fi
 
   build-docker:
     env:
-      GH_VERSION: ${{ steps.gh_version.outputs.gh_version }}
+      GH_VERSION: ${{ needs.get-version.outputs.version }}
     needs:
       - get-version
       - update-version
