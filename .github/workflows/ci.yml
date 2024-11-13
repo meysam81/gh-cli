@@ -12,7 +12,8 @@ jobs:
   get-version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      current-version: ${{ steps.version.outputs.current-version }}
+      latest-version: ${{ steps.version.outputs.latest-version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,14 +24,15 @@ jobs:
           echo "$current_version"
           latest_versions="$(curl -sL https://api.github.com/repos/cli/cli/releases | jq -c '.[] | select(.prerelease == false)' | jq -r '.tag_name' | tr '\n' ' ')"
           echo "$latest_versions"
-          next_version="$(echo "$latest_versions" | grep -Eo "(.*?) v$current_version( |$)" | awk '{print $(NF-1)}' | cut -c2-)"
-          echo "$next_version"
-          echo "version=${next_version}" >> $GITHUB_OUTPUT
+          latest_version="$(echo "$latest_versions" | grep -Eo "(.*?) v$current_version( |$)" | awk '{print $(NF-1)}' | cut -c2-)"
+          echo "$latest_version"
+          echo "current-version=${current_version}" >> $GITHUB_OUTPUT
+          echo "latest-version=${latest_version}" >> $GITHUB_OUTPUT
 
   update-version:
     env:
-      GH_VERSION: ${{ needs.get-version.outputs.version }}
-    if: needs.get-version.outputs.version != ''
+      GH_VERSION: ${{ needs.get-version.outputs.latest-version }}
+    if: needs.get-version.outputs.latest-version!= ''
     needs: get-version
     permissions:
       contents: write
@@ -57,7 +59,8 @@ jobs:
 
   build-docker:
     env:
-      GH_VERSION: ${{ needs.get-version.outputs.version }}
+      GH_VERSION: ${{ needs.get-version.outputs.latest-version || needs.get-version.outputs.current-version }}
+    if: always()
     needs:
       - get-version
       - update-version
@@ -72,6 +75,8 @@ jobs:
         uses: meysam81/build-docker@main
         with:
           cosign: true
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-password: ${{ secrets.DOCKERHUB_PASSWORD }}
           image-name: |
             ${{ github.repository }}
             meysam81/${{ github.event.repository.name }}
