@@ -88,3 +88,18 @@ jobs:
           kubescape: true
           kubescape-upload-sarif: true
           platforms: linux/amd64
+
+  github-release:
+    needs:
+      - get-version
+      - update-version
+    env:
+      GH_VERSION: ${{ needs.get-version.outputs.latest-version }}
+    if: needs.get-version.outputs.latest-version!= ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Create release ${{ env.GH_VERSION }}
+        run: |
+          gh release create ${{ env.GH_VERSION }} -t ${{ env.GH_VERSION }} --generate-notes
