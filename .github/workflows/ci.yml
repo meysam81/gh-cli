@@ -81,8 +81,10 @@ jobs:
             ghcr.io/${{ github.repository }}
             meysam81/${{ github.event.repository.name }}
           image-extra-tags: |
+            ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{ github.run_id }}
             ghcr.io/${{ github.repository }}:${{ env.GH_VERSION }}
+            meysam81/${{ github.event.repository.name }}:latest
             meysam81/${{ github.event.repository.name }}:${{ github.run_id }}
             meysam81/${{ github.event.repository.name }}:${{ env.GH_VERSION }}
           kubescape: true
