@@ -21,13 +21,13 @@ jobs:
         id: version
         run: |
           current_version="$(sed -n 's/ENV GITHUB_CLI_VERSION=//p' Dockerfile)"
-          echo "$current_version"
-          latest_versions="$(curl -sL https://api.github.com/repos/cli/cli/releases | jq -c '.[] | select(.prerelease == false)' | jq -r '.tag_name' | tr '\n' ' ')"
-          echo "$latest_versions"
-          latest_version="$(echo "$latest_versions" | grep -Eo "(.*?) v$current_version( |$)" | awk '{print $(NF-1)}' | cut -c2-)"
-          echo "$latest_version"
-          echo "current-version=${current_version}" >> $GITHUB_OUTPUT
-          echo "latest-version=${latest_version}" >> $GITHUB_OUTPUT
+          echo "current_version=$current_version"
+          latest_version="$(gh release view --json tagName --jq .tagName -R cli/cli)"
+          echo "latest_version=$latest_version"
+          echo "current-version=${current_version}" >> "$GITHUB_OUTPUT"
+          echo "latest-version=${latest_version}" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   update-version:
     env:
@@ -54,7 +54,7 @@ jobs:
           else
             git add Dockerfile
             git commit -m "chore(deps): Update GITHUB_CLI_VERSION to ${GH_VERSION}"
-            git push origin $(git branch --show-current)
+            git push origin "$(git branch --show-current)"
           fi
 
   build-docker:
