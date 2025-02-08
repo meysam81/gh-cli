@@ -23,6 +23,7 @@ jobs:
           current_version="$(sed -n 's/ENV GITHUB_CLI_VERSION=//p' Dockerfile)"
           echo "current_version=$current_version"
           latest_version="$(gh release view --json tagName --jq .tagName -R cli/cli)"
+          latest_version="${latest_version#v}"
           echo "latest_version=$latest_version"
           echo "current-version=${current_version}" >> "$GITHUB_OUTPUT"
           echo "latest-version=${latest_version}" >> "$GITHUB_OUTPUT"
