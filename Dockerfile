@@ -23,10 +23,11 @@ RUN set -ex; \
     chmod +x /usr/local/bin/gh; \
     gh --version
 
-FROM alpine:3
+FROM busybox:stable
 
-RUN apk add --no-cache ca-certificates \
-    && adduser -D -u 65532 -g "gh" gh
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+RUN adduser -D -u 10000 -g "gh" gh
 
 COPY --from=builder /usr/local/bin/gh /usr/local/bin/gh
 

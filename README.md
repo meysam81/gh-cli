@@ -1,48 +1,47 @@
-# Alpine-based Dockerized GitHub CLI
+# BusyBox-based Dockerized GitHub CLI
 
 ## Table of Contents
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Alpine-based Dockerized GitHub CLI](#alpine-based-dockerized-github-cli)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Features](#features)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-    - [Pull from GitHub Container Registry](#pull-from-github-container-registry)
-  - [Usage](#usage)
-    - [Basic Usage](#basic-usage)
-    - [Shell Access](#shell-access)
-  - [Configuration](#configuration)
-  - [Security Considerations](#security-considerations)
-  - [Signature Verification](#signature-verification)
-    - [Cosign Keyless Verification](#cosign-keyless-verification)
-      - [Verification Process](#verification-process)
-      - [Verification Details](#verification-details)
-      - [Security Benefits](#security-benefits)
-  - [Versioning](#versioning)
-  - [Contributing](#contributing)
-  - [License](#license)
+- [Overview](#overview)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+  - [Pull from GitHub Container Registry](#pull-from-github-container-registry)
+- [Usage](#usage)
+  - [Basic Usage](#basic-usage)
+  - [Shell Access](#shell-access)
+- [Configuration](#configuration)
+- [Security Considerations](#security-considerations)
+- [Signature Verification](#signature-verification)
+  - [Cosign Keyless Verification](#cosign-keyless-verification)
+    - [Verification Process](#verification-process)
+    - [Verification Details](#verification-details)
+    - [Security Benefits](#security-benefits)
+- [Versioning](#versioning)
+- [Contributing](#contributing)
+- [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Overview
 
-This repository provides a minimal, secure Dockerized GitHub CLI built on an
-Alpine Linux base image.
+This repository provides a minimal, secure Dockerized GitHub CLI built on a
+BusyBox base image.
 
 The GitHub CLI (`gh`) is packaged into a lightweight, secure container that can
 be used across different environments without complex dependencies.
 
 ## Features
 
-- Minimal Alpine Linux base image for small footprint
+- Minimal BusyBox base image for smallest footprint
 - Multi-architecture support (amd64, arm64)
 - Latest stable version GitHub CLI (automated using GitHub Actions)
 - Multi-stage build for optimization
-- Non-root user execution (UID 65532)
+- Non-root user execution (UID 10000)
+- No package manager in final image
 - Minimal shell access for debugging when needed
 - Easy cross-platform deployment
 
@@ -95,9 +94,9 @@ docker run --rm -it --entrypoint /bin/sh ghcr.io/meysam81/gh-cli:main
 
 ## Security Considerations
 
-- Minimal Alpine base image reduces attack surface
-- Runs as non-root user (UID 65532)
-- No package manager cache in final image
+- Minimal BusyBox base image reduces attack surface
+- Runs as non-root user (UID 10000)
+- No package manager in final image
 - Cryptographic checksum verification during build
 - BusyBox shell available for restricted debugging only
 
