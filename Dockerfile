@@ -1,30 +1,35 @@
-FROM debian:bookworm-slim AS builder
+FROM alpine:3 AS builder
 
-RUN set -ex; \
-    apt-get update ; \
-    apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        git; \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    ca-certificates \
+    curl
 
 ENV GITHUB_CLI_VERSION=2.86.0
 
+ARG TARGETARCH
+
 RUN set -ex; \
+    case "${TARGETARCH}" in \
+        amd64) ARCH="amd64" ;; \
+        arm64) ARCH="arm64" ;; \
+        *) echo "Unsupported architecture: ${TARGETARCH}" && exit 1 ;; \
+    esac; \
     curl -L "https://github.com/cli/cli/releases/download/v${GITHUB_CLI_VERSION}/gh_${GITHUB_CLI_VERSION}_checksums.txt" -o checksums.txt; \
-    curl -OL "https://github.com/cli/cli/releases/download/v${GITHUB_CLI_VERSION}/gh_${GITHUB_CLI_VERSION}_linux_amd64.deb"; \
-    shasum --ignore-missing -a 512 -c checksums.txt; \
-    dpkg -i "gh_${GITHUB_CLI_VERSION}_linux_amd64.deb"; \
-    rm -rf "gh_${GITHUB_CLI_VERSION}_linux_amd64.deb"; \
+    curl -OL "https://github.com/cli/cli/releases/download/v${GITHUB_CLI_VERSION}/gh_${GITHUB_CLI_VERSION}_linux_${ARCH}.tar.gz"; \
+    grep "gh_${GITHUB_CLI_VERSION}_linux_${ARCH}.tar.gz" checksums.txt > temp_checksums.txt && mv temp_checksums.txt checksums.txt; \
+    sha256sum -c checksums.txt; \
+    tar -xvzf "gh_${GITHUB_CLI_VERSION}_linux_${ARCH}.tar.gz"; \
+    find . -type f -name "gh" -executable -exec mv {} /usr/local/bin/gh \;; \
+    chmod +x /usr/local/bin/gh; \
     gh --version
 
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM alpine:3
 
-COPY --from=builder /usr/bin/gh /usr/bin/gh
-COPY --from=builder /lib/x86_64-linux-gnu/libz.so.1 /lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 /usr/lib/x86_64-linux-gnu/
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libc.so.6 /usr/lib/x86_64-linux-gnu/
+RUN apk add --no-cache ca-certificates \
+    && adduser -D -u 65532 -g "gh" gh
 
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/local/bin/gh /usr/local/bin/gh
 
-CMD ["/usr/bin/gh"]
+USER gh
+
+CMD ["/usr/local/bin/gh", "--version"]

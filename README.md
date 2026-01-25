@@ -1,54 +1,57 @@
-# Distroless Dockerized GitHub CLI 🐳🚀
+# Alpine-based Dockerized GitHub CLI
 
-## 📋 Table of Contents
+## Table of Contents
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Distroless Dockerized GitHub CLI 🐳🚀](#distroless-dockerized-github-cli-)
-  - [📋 Table of Contents](#-table-of-contents)
-  - [🌟 Overview](#-overview)
-  - [✨ Features](#-features)
-  - [🛠 Prerequisites](#-prerequisites)
-  - [💿 Installation](#-installation)
+- [Alpine-based Dockerized GitHub CLI](#alpine-based-dockerized-github-cli)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Features](#features)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
     - [Pull from GitHub Container Registry](#pull-from-github-container-registry)
-  - [🚢 Usage](#-usage)
+  - [Usage](#usage)
     - [Basic Usage](#basic-usage)
-  - [🔧 Configuration](#-configuration)
-  - [🔐 Security Considerations](#-security-considerations)
-  - [🔏 Signature Verification](#-signature-verification)
+    - [Shell Access](#shell-access)
+  - [Configuration](#configuration)
+  - [Security Considerations](#security-considerations)
+  - [Signature Verification](#signature-verification)
     - [Cosign Keyless Verification](#cosign-keyless-verification)
       - [Verification Process](#verification-process)
       - [Verification Details](#verification-details)
       - [Security Benefits](#security-benefits)
-  - [🔢 Versioning](#-versioning)
-  - [🤝 Contributing](#-contributing)
-  - [📄 License](#-license)
+  - [Versioning](#versioning)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## 🌟 Overview
+## Overview
 
-This repository provides a minimal, secure Dockerized GitHub CLI built on a
-distroless base image.
+This repository provides a minimal, secure Dockerized GitHub CLI built on an
+Alpine Linux base image.
 
 The GitHub CLI (`gh`) is packaged into a lightweight, secure container that can
 be used across different environments without complex dependencies.
 
-## ✨ Features
+## Features
 
-- 🔒 Distroless base image for minimal attack surface
-- 📦 Latest stable version GitHub CLI (automated using GitHub Actions)
-- 🚀 Multi-stage build for optimization
-- 🛡️ Minimal runtime dependencies
-- 🌍 Easy cross-platform deployment
+- Minimal Alpine Linux base image for small footprint
+- Multi-architecture support (amd64, arm64)
+- Latest stable version GitHub CLI (automated using GitHub Actions)
+- Multi-stage build for optimization
+- Non-root user execution (UID 65532)
+- Minimal shell access for debugging when needed
+- Easy cross-platform deployment
 
-## 🛠 Prerequisites
+## Prerequisites
 
 - Docker 20.10+
 - GitHub CLI authentication token (optional)
 
-## 💿 Installation
+## Installation
 
 ### Pull from GitHub Container Registry
 
@@ -66,30 +69,39 @@ version=$(curl -s $url | jq -r .tag_name)
 docker pull ghcr.io/meysam81/gh-cli:$version
 ```
 
-## 🚢 Usage
+## Usage
 
 ### Basic Usage
 
 ```bash
 docker run --rm -it \
   -e GH_TOKEN \
-  ghcr.io/meysam81/gh-cli:main gh repo list
+  ghcr.io/meysam81/gh-cli:main repo list
 ```
 
-## 🔧 Configuration
+### Shell Access
 
-- Mount `/root/.config/gh` to persist authentication
+For debugging purposes, you can access the container shell:
+
+```bash
+docker run --rm -it --entrypoint /bin/sh ghcr.io/meysam81/gh-cli:main
+```
+
+## Configuration
+
+- Mount `/home/gh/.config/gh` to persist authentication
 - Use environment variables for additional configuration
 - Supports all standard GitHub CLI commands
 
-## 🔐 Security Considerations
+## Security Considerations
 
-- Distroless image reduces attack surface
-- No shell or package manager in final image
-- Minimal runtime libraries
+- Minimal Alpine base image reduces attack surface
+- Runs as non-root user (UID 65532)
+- No package manager cache in final image
 - Cryptographic checksum verification during build
+- BusyBox shell available for restricted debugging only
 
-## 🔏 Signature Verification
+## Signature Verification
 
 ### Cosign Keyless Verification
 
@@ -124,13 +136,13 @@ cosign verify \
 
 **Note:** Requires [Cosign](https://github.com/sigstore/cosign) installation to perform verification.
 
-## 🔢 Versioning
+## Versioning
 
 - Image tracks GitHub CLI version
 - Semantic versioning used for tagging
 - Check [CHANGELOG.md](CHANGELOG.md) for details
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create your feature branch
@@ -138,11 +150,11 @@ cosign verify \
 4. Push to the branch
 5. Create a Pull Request
 
-## 📄 License
+## License
 
 [Apache 2.0 License](LICENSE)
 
 ---
 
-**💡 Pro Tip:** Always keep your GitHub CLI and Docker image updated for the
+**Pro Tip:** Always keep your GitHub CLI and Docker image updated for the
 latest features and security patches!
