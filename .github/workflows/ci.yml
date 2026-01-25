@@ -46,8 +46,8 @@ jobs:
           sed -i "s/ENV GITHUB_CLI_VERSION=.*/ENV GITHUB_CLI_VERSION=${GH_VERSION}/" Dockerfile
       - name: Configure git
         run: |
-          git config --global user.email ${{ github.actor }}@users.noreply.github.com
-          git config --global user.name ${{ github.actor }}
+          git config --global user.email "${{ github.run_id }}+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
       - name: Commit changes
         run: |
           if git diff --quiet Dockerfile; then
@@ -103,4 +103,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          if gh release view ${{ env.GH_VERSION }} -R ${{ github.repository }}; then
+            echo "Release ${{ env.GH_VERSION }} already exists, skipping"
+            exit 0
+          fi
           gh release create ${{ env.GH_VERSION }} -t ${{ env.GH_VERSION }} --generate-notes
