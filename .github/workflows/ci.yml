@@ -16,7 +16,7 @@ jobs:
       latest-version: ${{ steps.version.outputs.latest-version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Get next gh version
         id: version
         run: |
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Update GITHUB_CLI_VERSION
         run: |
           sed -i "s/ENV GITHUB_CLI_VERSION=.*/ENV GITHUB_CLI_VERSION=${GH_VERSION}/" Dockerfile
@@ -98,7 +98,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Create release ${{ env.GH_VERSION }}
         env:
           GH_TOKEN: ${{ github.token }}
