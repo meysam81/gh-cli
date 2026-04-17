@@ -4,7 +4,7 @@ RUN apk add --no-cache \
     ca-certificates \
     curl
 
-ENV GITHUB_CLI_VERSION=2.89.0
+ENV GITHUB_CLI_VERSION=2.90.0
 
 ARG TARGETARCH
 
